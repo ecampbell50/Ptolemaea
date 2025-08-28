@@ -1,0 +1,22 @@
+{
+  "version": "1.2",
+  "dbname": "PROT_ConsensusBcereus_20Mar25",
+  "dbtype": "Protein",
+  "db-version": 5,
+  "description": "BcereusDFseqs_wHASH_FRAME1AA.faa",
+  "number-of-letters": 52247845,
+  "number-of-sequences": 102311,
+  "last-updated": "2025-03-20T18:34:00",
+  "number-of-volumes": 1,
+  "bytes-total": 63618298,
+  "bytes-to-cache": 53168781,
+  "files": [
+    "PROT_ConsensusBcereus_20Mar25.pdb",
+    "PROT_ConsensusBcereus_20Mar25.phr",
+    "PROT_ConsensusBcereus_20Mar25.pin",
+    "PROT_ConsensusBcereus_20Mar25.pot",
+    "PROT_ConsensusBcereus_20Mar25.psq",
+    "PROT_ConsensusBcereus_20Mar25.ptf",
+    "PROT_ConsensusBcereus_20Mar25.pto"
+  ]
+}

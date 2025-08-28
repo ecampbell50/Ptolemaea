@@ -49,3 +49,47 @@ Running a forward and reverse BLAST ensures that not only was a particular prote
 
 Once you have all of these files, Ptolemaea can work to get you a consensus csv of each protein ID with an antiviral defence gene!
 
+# Pipeline
+### Please ensure all input/output file names match the same format as below, otherwise my scripts may not detect your naming convention
+## Run PADLOC (v2.0.0, db-version 2.0.0)
+```bash
+padloc --faa 123456.faa --gff 123456.gff
+```
+Fix PADLOC output .csv to include genome IDs
+```bash
+python3 1_genomeID_to_output.py 123456_padloc.csv
+```
+## Fix FAA file to add genome ID to locus tag before runnning other tools
+```bash
+python3 2_add_genomeID-to_faa.py 123456.faa
+```
+## Run DefenseFinder (v2.0.1)
+```bash
+defense-finder run 123456.faa
+```
+## Run forward BLAST (_B. cereus_ == subject)
+```bash
+blastp \
+    -query 123456.faa \
+    -db Bcereus_data/PROT_ConsensusBcereus_20Mar25 \
+    -out 123456_vs_bcereus_forward.txt \
+    -outfmt "6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qcovs qlen slen" \
+    -evalue 1e-5 \
+    -max_target_seqs 1 \
+    # -num_threads multithreading_if_available
+```
+## Run reverse BLAST (_B. cereus_ == query)
+```bash
+# Make a protein database from your genome
+makeblastdb -in 123456.faa -dbtype prot -out 123456_PROTdb
+
+# Run BLAST with your genome as the subject
+blastp \
+    -query BcereusDFseqs_wHASH_FRAME1AA.faa \
+    -db 123456_PROTdb # YOUR database
+    -out 123456_vs_bcereus_reverse.txt
+    -outfmt "6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qcovs qlen slen" \
+    -evalue 1e-5 \
+    -max_target_seqs 1 \
+    # -num_threads multithreading_if_available
+```

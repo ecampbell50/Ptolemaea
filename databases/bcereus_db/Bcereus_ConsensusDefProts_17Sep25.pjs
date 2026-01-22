@@ -1,0 +1,22 @@
+{
+  "version": "1.2",
+  "dbname": "Bcereus_ConsensusDefProts_17Sep25",
+  "dbtype": "Protein",
+  "db-version": 5,
+  "description": "Bcereus_DefenceProts_17Sep25.faa",
+  "number-of-letters": 52247845,
+  "number-of-sequences": 102311,
+  "last-updated": "2025-09-17T18:51:00",
+  "number-of-volumes": 1,
+  "bytes-total": 63382232,
+  "bytes-to-cache": 53168789,
+  "files": [
+    "Bcereus_ConsensusDefProts_17Sep25.pdb",
+    "Bcereus_ConsensusDefProts_17Sep25.phr",
+    "Bcereus_ConsensusDefProts_17Sep25.pin",
+    "Bcereus_ConsensusDefProts_17Sep25.pot",
+    "Bcereus_ConsensusDefProts_17Sep25.psq",
+    "Bcereus_ConsensusDefProts_17Sep25.ptf",
+    "Bcereus_ConsensusDefProts_17Sep25.pto"
+  ]
+}

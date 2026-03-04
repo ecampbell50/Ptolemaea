@@ -1,6 +1,6 @@
 # Ptolemaea: Antiviral Defence System Consolidation in Bacteria
 
-**Authors:** Emmet B. T. Campbell, Timofey Skvortsov, Christopher J. Creevey
+**Authors:** Emmet B. T. Campbell, Timofey Skvortsov, Sharon A. Huws, Christopher J. Creevey
 
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 
@@ -16,6 +16,49 @@ Ptolemaea is a comprehensive pipeline for detecting and consolidating antiviral 
 The pipeline integrates multiple detection methods and compares results against a curated database of *Bacillus cereus* defence genes from [July & Gillis (2025)](https://doi.org/10.1038/s41598-025-86748-8).
 
 **📝 Citation:** If you use Ptolemaea, please cite this tool, PADLOC, DefenseFinder, and the July & Gillis paper.
+
+# Getting started - if only running on a few genomes...
+To use Ptolemaea, you must have access to prerequisites (see section for this below).
+
+We hope to eventually make all required packages available in one clean download
+
+### Once you have access to prerequisites...
+- Clone the repo
+```bash
+git clone https://github.com/ecampbell50/Ptolemaea.git
+```
+- cd into Ptolemaea and create a "genomes" directory
+```bash
+cd Ptolemaea
+chmod +x scripts/Ptolemaea.sh
+
+# NB: ensure dir is called 'genomes' unless willing to edit pipeline scripts
+mkdir genomes
+
+# Then move any genomes to analyse into it
+mv /path/to/genomes/*.fna /path/to/Ptolemaea/genomes/
+# NB: script currently does not have extension handling
+# Please ensure genome fastas have the extension '.fna' (not .fa/.fasta/etc)
+```
+You MUST change these lines to suit your system 
+```bash
+pipeline_functions.sh:
+line 39:     conda run -p /path/to/prokka/env prokka \
+line 86:     conda run -p /path/to/padloc/env padloc \
+
+Ptolemaea.sh
+line 6:      module load apps/hmmer/3.4/gcc-14.1.0
+line 7:      module load apps/ncbiblast/2.15.0/gcc-14.1.0
+```
+- Now you can run the pipeline
+```bash
+./Ptolemaea.sh /path/to/Ptolemaea   # <- This sets your working directory
+```
+And you should then have your consensus output in Ptolemaea/output/05_consensus !
+
+If running on lots of genomes I reccommend using the defence_pipeline_array.sh and batch_subit_defence_pipeline.sh scripts.
+Mapping issues for all genomes can be rectified using extract_unresolved_patterns.py (see: "Post-Processing: Resolving Conflicts" below)
+
 
 ## Features
 
@@ -49,12 +92,6 @@ The pipeline integrates multiple detection methods and compares results against 
 
 The pipeline is designed for SLURM-based HPC systems. Adjust partition names and resource allocations in the scripts according to your cluster.
 
-## Installation
-```bash
-git clone https://github.com/ecampbell50/Ptolemaea.git
-cd Ptolemaea
-```
-
 ## Directory Structure
 ```
 Ptolemaea/
@@ -79,7 +116,7 @@ Ptolemaea/
 
 ## Usage
 
-### Quick Start
+### Large-scale analysis
 
 1. **Place your genome files** in the `genomes/` directory
    - Format: `genomeID.fna` (e.g., `1005041.3.fna`)
@@ -103,6 +140,7 @@ The script will:
 ### Pipeline Stages
 
 #### Stage 1: Genome Annotation (Prokka)
+##### NB: contig headers are normalised to ensure compatibility with PADLOC's gene ID matching
 ```bash
 prokka --outdir output/01_prokka/${GENOME_ID} \
        --prefix ${GENOME_ID} \
@@ -300,7 +338,7 @@ output/
 ## Resource Requirements
 
 **Per genome (default settings):**
-- **Time:** 30 minutes
+- **Time:** 30 minutes (safe time for ~2Mb S. suis genome)
 - **Memory:** 16 GB
 - **CPUs:** 6 cores
 
@@ -335,18 +373,6 @@ Modify in `pipeline_functions.sh`:
 -max_target_seqs 1     # Number of hits to report
 ```
 
-## Monitoring Jobs
-```bash
-# Check job status
-squeue -u $USER
-
-# View output logs
-tail -f logs/defence_JOBID_TASKID.out
-
-# Check for errors
-grep -i error logs/defence_*.err
-```
-
 ## Troubleshooting
 
 ### Common Issues
@@ -356,8 +382,8 @@ grep -i error logs/defence_*.err
    - Verify `genome_list.txt` was generated
 
 2. **PADLOC failures**
-   - Ensure Prokka GFF format is compatible
-   - Check PADLOC database is installed
+   - Ensure Prokka GFF format is compatible (not tested with Bakta/Prodigal gffs yet)
+   - Check PADLOC database is installed and matches PADLOC version
 
 3. **DefenseFinder errors**
    - Verify HMMER is loaded/installed
@@ -365,11 +391,8 @@ grep -i error logs/defence_*.err
 
 4. **BLAST database not found**
    - Ensure *B. cereus* database files are in `databases/bcereus_db/`
-   - Run `makeblastdb` if database files are missing
+   - Have not tested with custom databases, ensure they fit a coherent naming convention that matches the master key file
 
-5. **Out of memory errors**
-   - Increase `#SBATCH --mem=` in the SLURM script
-   - Reduce `--cpus-per-task` if node memory is limited
 
 ## Performance Tips
 
@@ -405,9 +428,7 @@ And please cite the underlying tools and databases:
 
 ## Support
 
-For questions or issues:
-- Open an issue on GitHub
-- Contact: ecampbell50@qub.ac.uk
+Please let me know about any problems you run into or any questions!
 
 ## Acknowledgments
 

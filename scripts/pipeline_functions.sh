@@ -2,7 +2,7 @@
 # pipeline_functions.sh
 # Reusable functions for defence system pipeline
 # Source this file in your SLURM scripts with: source pipeline_functions.sh
-##### SET CONDA ENVS SPECIFIC TO YOUR SYSTEM (lines 27, 70,  
+##### SET CONDA ENVS SPECIFIC TO YOUR SYSTEM (lines 39, 86) 
 
 
 # Function to run Prokka annotation
@@ -11,10 +11,9 @@ run_prokka() {
     local GENOME_ID=$2
     local OUTPUT_DIR=$3
     local CPUS=${4:-6}
-
     local PROKKA_OUT="${OUTPUT_DIR}/${GENOME_ID}"
+    local CLEAN_FNA="${PROKKA_OUT}/${GENOME_ID}_clean.fna"
 
-    # Check if already complete
     if [[ -f "${PROKKA_OUT}/${GENOME_ID}.gff" ]] && [[ -f "${PROKKA_OUT}/${GENOME_ID}.faa" ]]; then
         echo "Prokka already complete for ${GENOME_ID}"
         return 0
@@ -23,17 +22,29 @@ run_prokka() {
     echo "Running Prokka for ${GENOME_ID}"
     mkdir -p "${PROKKA_OUT}"
 
-    # Run exactly as in original script - using conda run
-    conda run -p /path/to/prokka/env/prokka prokka \
+    # Shorten contig names if any exceed Prokka's 37-char limit
+    # (caused by long names or illegal | characters in input FASTA)
+    python3 -c "
+import re, sys
+counter = 1
+with open('${GENOME_FILE}') as f, open('${CLEAN_FNA}', 'w') as out:
+    for line in f:
+        if line.startswith('>'):
+            out.write(f'>contig{counter:05d}\n')
+            counter += 1
+        else:
+            out.write(line)
+print(f'  Renamed contigs in ${GENOME_ID}')
+"
+    conda run -p /path/to/prokka/env prokka \    #<------------------------------------------------------ EDIT THIS PATH TO YOUR SYSTEM
         --outdir "${PROKKA_OUT}" \
         --prefix "${GENOME_ID}" \
         --kingdom Bacteria \
         --gcode 11 \
         --cpus ${CPUS} \
         --force \
-        "${GENOME_FILE}"
+        "${CLEAN_FNA}"    # <-- use cleaned FASTA, no --compliant needed
 
-    # Check success
     if [[ -f "${PROKKA_OUT}/${GENOME_ID}.gff" ]]; then
         local GENE_COUNT=$(grep -c "CDS" "${PROKKA_OUT}/${GENOME_ID}.gff" || echo "0")
         echo "Prokka complete: ${GENOME_ID} with ${GENE_COUNT} genes"
@@ -54,10 +65,15 @@ run_padloc() {
 
     local PADLOC_OUT="${OUTPUT_DIR}/${GENOME_ID}"
 
-    # Check if already complete with genome ID added
+    # Check if already complete:
+    # - non-empty CSV with genome ID already added, OR
+    # - empty CSV (meaning PADLOC ran but found nothing)
     if [[ -f "${PADLOC_OUT}/${GENOME_ID}_padloc.csv" ]]; then
         if grep -q "@" "${PADLOC_OUT}/${GENOME_ID}_padloc.csv" 2>/dev/null; then
             echo "PADLOC already complete for ${GENOME_ID}"
+            return 0
+        elif [[ ! -s "${PADLOC_OUT}/${GENOME_ID}_padloc.csv" ]]; then
+            echo "PADLOC already run for ${GENOME_ID} (no defence systems found)"
             return 0
         fi
     fi
@@ -67,10 +83,11 @@ run_padloc() {
     cd "${PADLOC_OUT}"
 
     # Run exactly as in original script - using conda run
-    conda run -p /path/to/padloc/env/padloc padloc \
+    conda run -p /path/to/padloc/env padloc \    #<----------------------------------------------------- EDIT THIS PATH TO YOUR SYSTEM
         --faa "${FAA_FILE}" \
         --gff "${GFF_FILE}" \
         --cpu ${CPUS} \
+        --force \
         --outdir .
 
     cd - > /dev/null
@@ -98,8 +115,9 @@ fix_padloc_output() {
     fi
 
     echo "Adding genome ID to PADLOC output"
-
-    python3 -c "
+    # Only add genome ID column if PADLOC found something
+    if [[ -s "${PADLOC_CSV}" ]]; then
+        python3 -c "
 import pandas as pd
 df = pd.read_csv('${PADLOC_CSV}')
 if 'target.name' in df.columns:
@@ -107,6 +125,7 @@ if 'target.name' in df.columns:
     df.to_csv('${PADLOC_CSV}', index=False)
     print('  Added genome ID prefix to ${PADLOC_CSV}')
 "
+    fi
 }
 
 # Function to add genome ID to FAA headers

@@ -2,7 +2,7 @@
 # pipeline_functions.sh
 # Reusable functions for defence system pipeline
 # Source this file in your SLURM scripts with: source pipeline_functions.sh
-##### SET CONDA ENVS SPECIFIC TO YOUR SYSTEM (lines 39, 86) 
+##### SET CONDA ENVS SPECIFIC TO YOUR SYSTEM (lines 40, 91) 
 
 
 # Function to run Prokka annotation
@@ -36,7 +36,8 @@ with open('${GENOME_FILE}') as f, open('${CLEAN_FNA}', 'w') as out:
             out.write(line)
 print(f'  Renamed contigs in ${GENOME_ID}')
 "
-    conda run -p /path/to/prokka/env prokka \    #<------------------------------------------------------ EDIT THIS PATH TO YOUR SYSTEM
+    # Edit the below path to match the system's prokka conda environment
+    conda run -p /path/to/prokka/env prokka \
         --outdir "${PROKKA_OUT}" \
         --prefix "${GENOME_ID}" \
         --kingdom Bacteria \
@@ -80,17 +81,18 @@ run_padloc() {
 
     echo "Running PADLOC for ${GENOME_ID}"
     mkdir -p "${PADLOC_OUT}"
-    cd "${PADLOC_OUT}"
 
-    # Run exactly as in original script - using conda run
-    conda run -p /path/to/padloc/env padloc \    #<----------------------------------------------------- EDIT THIS PATH TO YOUR SYSTEM
-        --faa "${FAA_FILE}" \
-        --gff "${GFF_FILE}" \
+    local FAA_ABS GFF_ABS PADLOC_OUT_ABS
+    FAA_ABS=$(realpath "${FAA_FILE}")
+    GFF_ABS=$(realpath "${GFF_FILE}")
+    PADLOC_OUT_ABS=$(realpath "${PADLOC_OUT}")
+
+    conda run -p /mnt/scratch2/igfs-anaconda/conda-envs/padloc_2.0.0 padloc \
+        --faa "${FAA_ABS}" \
+        --gff "${GFF_ABS}" \
         --cpu ${CPUS} \
         --force \
-        --outdir .
-
-    cd - > /dev/null
+        --outdir "${PADLOC_OUT_ABS}"
 
     # Check and fix output
     if [[ -f "${PADLOC_OUT}/${GENOME_ID}_padloc.csv" ]]; then

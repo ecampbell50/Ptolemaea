@@ -1,5 +1,6 @@
+#!/bin/bash
 # Load modules
-# Ensure hmmer, defense-finder, and blast are available in path for defense-finder and blast steps
+# Ensure hmmer, defense-finder, and blast are available in path for defense-finder and blast steps
 # My system is a hpc and had hmmer and blast installed as modules
 # I downloaded defensefinder with pip, so its in path
 

@@ -9,11 +9,19 @@
 #SBATCH --array=1-1000
 
 # Load modules
-# Ensure hmmer and blast are available in path for defense-finder and blast steps
+# Ensure hmmer and blast are available in path for defense-finder and blast steps
 module load apps/hmmer/3.4/gcc-14.1.0
 module load apps/ncbiblast/2.15.0/gcc-14.1.0
 
-WORKING_DIR=""
+# WORKING_DIR is either exported by batch_submit_defence_pipeline.sh, or set here
+# manually if you submit this array script directly.
+WORKING_DIR="${WORKING_DIR:-}"
+if [[ -z "$WORKING_DIR" ]]; then
+    echo "ERROR: WORKING_DIR is not set. Submit via batch_submit_defence_pipeline.sh,"
+    echo "       or edit this script and set WORKING_DIR manually."
+    exit 1
+fi
+
 GENOME_DIR="${WORKING_DIR}/genomes"
 OUTPUT_BASE="${WORKING_DIR}/output"
 MASTER_KEY="${WORKING_DIR}/databases/MASTER_ToolKey.tsv"

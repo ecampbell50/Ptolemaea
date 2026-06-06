@@ -32,6 +32,9 @@ def load_master_key_mappings(master_key_file):
 
     try:
         master_df = pd.read_csv(master_key_file, sep='\t')
+        # Strip stray leading/trailing whitespace from all text cells so that
+        # e.g. "Unknown " and "Unknown" are not treated as different categories.
+        master_df = master_df.apply(lambda c: c.str.strip() if c.dtype == 'object' else c)
         print(f"   Master key entries: {len(master_df)}")
 
         # Create mapping dictionaries
@@ -98,24 +101,20 @@ def clean_trailing_underscore_one(name):
 
     return name
 
-def clean_defense_system_name(name):
-    """
-    Remove trailing '_1' from defense system names that appear in BLAST results.
-    """
-    if name.endswith('_1'):
-        return name[:-2]  # Remove last 2 characters ('_1')
-    return name
-
 def extract_defense_system_from_blast_id(blast_id):
     """
     Extract defense system name from BLAST subject/query ID.
     Expected format: locustag#defensesystem_subtype_1
+
+    Uses the exception-aware cleaner so that legitimate names which end in '_1'
+    (e.g. DISARM_1, PD-T7-5_1) are preserved and therefore still match the
+    master key, rather than being stripped to DISARM / PD-T7-5.
     """
     if '#' in blast_id:
         # Split by '#' and take the second part (defense system)
         defense_part = blast_id.split('#')[1]
-        # Remove the trailing '_1' if present
-        return clean_defense_system_name(defense_part)
+        # Remove the trailing '_1' if present (honouring exceptions)
+        return clean_trailing_underscore_one(defense_part)
     return blast_id
 
 def extract_defense_name_from_blast(blast_result):

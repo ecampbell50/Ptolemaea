@@ -1,0 +1,11 @@
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+
+# Pipeline outputs / inputs (not version-controlled)
+genomes/
+output/
+logs/

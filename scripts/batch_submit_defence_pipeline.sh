@@ -1,9 +1,23 @@
 #!/bin/bash
-WORKING_DIR=""
+WORKING_DIR=""   # <-- SET THIS to your Ptolemaea working directory (absolute path)
+BATCH_SIZE=1000  # Set number of genomes to process per job
+
+# --- Safety check: WORKING_DIR must be set ---
+if [[ -z "$WORKING_DIR" ]]; then
+    echo "ERROR: WORKING_DIR is empty. Edit this script and set it before running."
+    exit 1
+fi
+
 GENOME_DIR="${WORKING_DIR}/genomes"
 OUTPUT_BASE="${WORKING_DIR}/output"
 GENOME_LIST="${OUTPUT_BASE}/genome_list.txt"
-BATCH_SIZE=1000 # Set number of genomes to process per job
+ARRAY_SCRIPT="${WORKING_DIR}/scripts/defence_pipeline_array.sh"
+
+# --- Safety check: array script must exist ---
+if [[ ! -f "$ARRAY_SCRIPT" ]]; then
+    echo "ERROR: array job script not found: $ARRAY_SCRIPT"
+    exit 1
+fi
 
 mkdir -p "${WORKING_DIR}/logs"
 mkdir -p "${OUTPUT_BASE}"
@@ -35,7 +49,13 @@ for ((batch=0; batch<NUM_BATCHES; batch++)); do
 
     echo "Submitting batch $((batch+1))/$NUM_BATCHES, genomes $((BATCH_START+1)) to $((BATCH_START+GENOMES_IN_BATCH))"
 
-    JOB_ID=$(sbatch --export=BATCH_START=$BATCH_START --array=1-$GENOMES_IN_BATCH "${WORKING_DIR}/scripts/defence_pipeline_array.slurm" | awk '{print $4}')
+    # --export=ALL keeps the current environment (conda init, defense-finder on PATH,
+    # loaded modules) and adds the two pipeline variables. WORKING_DIR is passed through
+    # so it only needs to be set here, not also in the array script.
+    JOB_ID=$(sbatch --chdir="${WORKING_DIR}" \
+                    --export=ALL,BATCH_START=$BATCH_START,WORKING_DIR="${WORKING_DIR}" \
+                    --array=1-$GENOMES_IN_BATCH \
+                    "${ARRAY_SCRIPT}" | awk '{print $4}')
     echo "  Job ID: $JOB_ID"
 
     sleep 3

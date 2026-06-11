@@ -18,14 +18,14 @@ complementary methods over a single, common protein set and reconciling them int
 - **Bidirectional BLASTp** against curated *Bacillus cereus* defence proteins from [July & Gillis (2025)](https://doi.org/10.1038/s41598-025-86748-8)
 
 It does not introduce new models or claim higher accuracy than its components. Its purpose is
-to **maximise recall** and to make inter-tool disagreements **explicit, traceable, and resolvable**,
+to **maximise annotations** and to make inter-tool disagreements **explicit, traceable, and resolvable**,
 with an optional human-in-the-loop curation step.
 
 ## How it works
 
 Each genome passes through five stages:
 
-1. **Prokka** — predict proteins (`.faa`) and coordinates (`.gff`); contig headers are normalised automatically.
+1. **Prokka/Pyrodigal** — predict proteins (`.faa`) and coordinates (`.gff`); contig headers are normalised automatically.
 2. **PADLOC** — detect defence systems from the protein/GFF pair.
 3. **DefenseFinder** — detect defence systems from the same proteins.
 4. **Bidirectional BLASTp** — forward (genome → *B. cereus* DB) and reverse (*B. cereus* → genome) searches.
@@ -47,8 +47,140 @@ shared consensus name (e.g. PADLOC `AbiD` + DefenseFinder `Abi2` → `Abi2DF`).
 
 (BLAST-only hits that fail the filters are discarded and excluded from the output.)
 
-## Installation
+# NEW! Apptainer Format (w/ Pyrodigal instead of Prokka!)
+## Quick start (containerised, Apptainer)
 
+The pipeline runs entirely from Apptainer images — no conda, no `module load` for
+the tools. You need **Apptainer** and internet access
+for the one-time setup below.
+
+### 1. Clone
+
+```bash
+git clone https://github.com/ecampbell50/Ptolemaea.git
+cd Ptolemaea
+```
+
+### 2. One-time setup (do once)
+
+**a) Keep Apptainer's cache off your home dir** (images are large). Point it at
+scratch / a roomy disk:
+
+```bash
+export APPTAINER_CACHEDIR=/path/to/scratch/apptainer/cache
+export APPTAINER_TMPDIR=/path/to/scratch/apptainer/tmp
+mkdir -p "$APPTAINER_CACHEDIR" "$APPTAINER_TMPDIR"
+```
+
+**b) Pull the five tool images** into an `images/` dir (these tags are the
+paper versions — see `singularity_scripts/ptolemaea.config` to change them):
+
+```bash
+mkdir -p images && cd images
+apptainer pull pyrodigal.sif     docker://quay.io/biocontainers/pyrodigal:3.7.1--py312h247cb63_1
+apptainer pull padloc.sif        docker://quay.io/biocontainers/padloc:2.0.0--hdfd78af_1
+apptainer pull defensefinder.sif docker://quay.io/biocontainers/defense-finder:2.0.1--pyhdfd78af_0
+apptainer pull blast.sif         docker://quay.io/biocontainers/blast:2.16.0--h66d330f_5
+apptainer pull pandas.sif        docker://quay.io/biocontainers/pandas:2.2.1
+cd ..
+```
+
+**c) Download the two databases** (PADLOC's HMMs + DefenseFinder's models) into
+writable folders. These need internet, so run them on a login/data-mover node,
+**not** inside a compute job:
+
+```bash
+mkdir -p databases_runtime/padloc_data databases_runtime/df_models
+
+# PADLOC database (writable overlay onto the image's /usr/local/data)
+apptainer exec --bind "$PWD" \
+    --bind "$PWD/databases_runtime/padloc_data:/usr/local/data" \
+    images/padloc.sif padloc --db-update
+
+# DefenseFinder models — IMPORTANT: this fetches the LATEST models. DefenseFinder
+# 2.0.1 needs v2.x models; if you upgrade the DF image to 3.x you must also use
+# matching 3.x models (see the coupling note in ptolemaea.config).
+apptainer exec --bind "$PWD" \
+    images/defensefinder.sif defense-finder update \
+    --models-dir "$PWD/databases_runtime/df_models"
+```
+
+### 3. Edit the config for your system
+
+Open `singularity_scripts/ptolemaea.config` and set:
+
+| Variable | To |
+|---|---|
+| `PTOL_IMAGE_DIR` | absolute path to your `images/` dir |
+| `PTOL_BIND` | a host path that contains your working dir (HPC scratch is often **not** auto-mounted, so it must be bound — e.g. `/mnt/scratch2`) |
+| `PTOL_PADLOC_DATA` | absolute path to `databases_runtime/padloc_data` |
+| `PTOL_DF_MODELS` | absolute path to `databases_runtime/df_models` |
+
+### 4. Add genomes and run
+
+One nucleotide FASTA per genome, `.fna` extension, in `genomes/`:
+
+```bash
+mkdir -p genomes
+cp /path/to/*.fna genomes/
+
+bash singularity_scripts/Ptolemaea_singularity.sh .
+```
+
+Per-genome consensus profiles land in `output/05_consensus/`. Then curate and
+build the final matrix as in the main usage section.
+
+## Curation
+
+`extract_unresolved_patterns.py` groups all MAPPING/CONFLICT genes by their unique
+(PADLOC, DefenseFinder, BLAST) annotation pattern, so you only decide each pattern **once**.
+Open the CSV and fill three columns per row:
+
+| Column | Example values |
+|---|---|
+| `TYPE` | `CBASS`, `BREX`, `RM` |
+| `SUBTYPE` | `CBASS_IIs`, `BREX_I`, `RM_I` |
+| `OUTCOME` | `Abi`, `Non-abi`, `Unknown` |
+
+When a value genuinely cannot be determined, use `type_unresolved` / `subtype_unresolved` /
+`outcome_unresolved` (distinct from `Unknown`, which means a tool detected it but could not classify it).
+
+## Outputs
+
+### Per genome — `output/`
+```
+01_prokka/<id>/<id>.faa, <id>.gff
+02_padloc/<id>/<id>_padloc.csv
+03_defensefinder/<id>/<id>_defense_finder_genes.tsv
+04_blast/<id>/<id>_vs_bcereus_{forward,reverse}_cleaned.txt
+05_consensus/<id>_defenceprofile.csv      # consensus profile (one row per defence gene)
+```
+
+### Final aggregated outputs — `create_final_defence_matrix.py`
+- **`<prefix>_matrix.csv`** — wide genome × system matrix, **gene counts** (the unit is genes, not
+  collapsed multi-gene systems). Columns encode all three levels of annotation as
+  `<type>#<subtype>#<outcome>`. Use `--binary` for presence/absence; `--level subtype` or
+  `--level type` for single-level columns.
+- **`<prefix>_annotations.csv`** — tidy table, one row per defence gene (incl. `status`, `resolution_source`, final TYPE/SUBTYPE/OUTCOME).
+- **`<prefix>_summary.tsv`** — per-genome counts (defence genes, unique systems, status breakdown).
+
+Each matrix column header packs all three annotation levels, separated by `#`:
+
+```
+            <type> # <subtype> # <outcome>
+   e.g.       RM   #   RM_I     #  Non-abi
+```
+
+```
+# <prefix>_matrix.csv (gene counts; column headers are type#subtype#outcome)
+genome_id,RM#RM_I#Non-abi,CBASS#CBASS_IIs#Abi,BREX#BREX_I#Non-abi,DRT#DRT_Type6#Unknown
+1005041.3,2,1,1,0
+1214195.3,1,0,1,1
+```
+
+
+# Older installation: requires user to have access to all tools
+## Installation
 ### Prerequisites
 
 | Tool | Version |
@@ -124,53 +256,7 @@ bash scripts/batch_submit_defence_pipeline.sh
 > **No conflicts?** If step 2 reports a clean run, skip to step 4 and omit `--resolutions`.
 > Uncurated MAPPING/CONFLICT genes are labelled `*_unresolved` so nothing is silently dropped.
 
-## Curation
 
-`extract_unresolved_patterns.py` groups all MAPPING/CONFLICT genes by their unique
-(PADLOC, DefenseFinder, BLAST) annotation pattern, so you only decide each pattern **once**.
-Open the CSV and fill three columns per row:
-
-| Column | Example values |
-|---|---|
-| `TYPE` | `CBASS`, `BREX`, `RM` |
-| `SUBTYPE` | `CBASS_IIs`, `BREX_I`, `RM_I` |
-| `OUTCOME` | `Abi`, `Non-abi`, `Unknown` |
-
-When a value genuinely cannot be determined, use `type_unresolved` / `subtype_unresolved` /
-`outcome_unresolved` (distinct from `Unknown`, which means a tool detected it but could not classify it).
-
-## Outputs
-
-### Per genome — `output/`
-```
-01_prokka/<id>/<id>.faa, <id>.gff
-02_padloc/<id>/<id>_padloc.csv
-03_defensefinder/<id>/<id>_defense_finder_genes.tsv
-04_blast/<id>/<id>_vs_bcereus_{forward,reverse}_cleaned.txt
-05_consensus/<id>_defenceprofile.csv      # consensus profile (one row per defence gene)
-```
-
-### Final aggregated outputs — `create_final_defence_matrix.py`
-- **`<prefix>_matrix.csv`** — wide genome × system matrix, **gene counts** (the unit is genes, not
-  collapsed multi-gene systems). Columns encode all three levels of annotation as
-  `<type>#<subtype>#<outcome>`. Use `--binary` for presence/absence; `--level subtype` or
-  `--level type` for single-level columns.
-- **`<prefix>_annotations.csv`** — tidy table, one row per defence gene (incl. `status`, `resolution_source`, final TYPE/SUBTYPE/OUTCOME).
-- **`<prefix>_summary.tsv`** — per-genome counts (defence genes, unique systems, status breakdown).
-
-Each matrix column header packs all three annotation levels, separated by `#`:
-
-```
-            <type> # <subtype> # <outcome>
-   e.g.       RM   #   RM_I     #  Non-abi
-```
-
-```
-# <prefix>_matrix.csv (gene counts; column headers are type#subtype#outcome)
-genome_id,RM#RM_I#Non-abi,CBASS#CBASS_IIs#Abi,BREX#BREX_I#Non-abi,DRT#DRT_Type6#Unknown
-1005041.3,2,1,1,0
-1214195.3,1,0,1,1
-```
 
 ## Configuration
 
@@ -183,12 +269,6 @@ genome_id,RM#RM_I#Non-abi,CBASS#CBASS_IIs#Abi,BREX#BREX_I#Non-abi,DRT#DRT_Type6#
 **Resources (per genome, defaults):** ~30 min, 16 GB RAM, 6 cores. Steps are idempotent —
 completed stages are skipped on re-run, so failed jobs can be resubmitted safely.
 
-## Troubleshooting
-
-- **No genomes processed** — check files end in `.fna` and `output/genome_list.txt` was generated.
-- **PADLOC fails** — GFF must be Prokka-style (Bakta/Prodigal GFFs untested); check the PADLOC database matches the PADLOC version.
-- **DefenseFinder errors** — ensure HMMER is available and DefenseFinder models are downloaded.
-- **BLAST database not found** — the `databases/bcereus_db/` files must be present; custom databases must use names consistent with `MASTER_ToolKey.tsv`.
 
 ## Citation
 

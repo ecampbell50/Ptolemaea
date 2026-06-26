@@ -1,11 +1,11 @@
 # Ptolemaea: Consensus Annotation of Antiviral Defence Systems
 
-**Authors:** Emmet B. T. Campbell, Timofey Skvortsov, Sharon A. Huws, Christopher J. Creevey
+**Authors:** Emmet B. T. Campbell, Timofey Skvortsov, Christopher J. Creevey
 
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-> *"In Ptolemaea, the final zone of the ninth circle of Hell, traitors to their guests are punished"* — much as bacteriophages, unwelcome guests in the cell, meet the bacterial antiviral arsenal.
+> *"In Ptolemaea, the final zone of the ninth circle of Hell, traitors to their guests are punished"* — just like how bacteriophages, guests of the bacterial cell, are mistreated by the antiviral defence arsenal
 
 ## Overview
 
@@ -25,7 +25,7 @@ with an optional human-in-the-loop curation step.
 
 Each genome passes through five stages:
 
-1. **Prokka/Pyrodigal** — predict proteins (`.faa`) and coordinates (`.gff`); contig headers are normalised automatically.
+1. **Pyrodigal** — predict proteins (`.faa`) and coordinates (`.gff`); contig headers are normalised automatically.
 2. **PADLOC** — detect defence systems from the protein/GFF pair.
 3. **DefenseFinder** — detect defence systems from the same proteins.
 4. **Bidirectional BLASTp** — forward (genome → *B. cereus* DB) and reverse (*B. cereus* → genome) searches.

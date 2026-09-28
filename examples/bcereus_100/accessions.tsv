@@ -1,0 +1,102 @@
+# 100 complete RefSeq B. cereus group genomes, selected with select_genomes.py on 2026-09-28
+accession	species	organism_name
+GCF_009740005.1	Bacillus albus	Bacillus albus
+GCF_030292135.1	Bacillus albus	Bacillus albus
+GCF_036287315.1	Bacillus albus	Bacillus albus
+GCF_056110285.1	Bacillus albus	Bacillus albus
+GCF_056140555.1	Bacillus albus	Bacillus albus
+GCF_056312675.1	Bacillus albus	Bacillus albus
+GCF_057418645.1	Bacillus albus	Bacillus albus
+GCF_042136375.2	Bacillus altaicus	Bacillus altaicus
+GCF_000007845.1	Bacillus anthracis	Bacillus anthracis str. Ames
+GCF_000008165.1	Bacillus anthracis	Bacillus anthracis str. Sterne
+GCF_000008445.1	Bacillus anthracis	Bacillus anthracis str. 'Ames Ancestor'
+GCF_000021445.1	Bacillus anthracis	Bacillus anthracis str. CDC 684
+GCF_000022865.1	Bacillus anthracis	Bacillus anthracis str. A0248
+GCF_000258885.1	Bacillus anthracis	Bacillus anthracis str. H9401
+GCF_000295695.2	Bacillus anthracis	Bacillus anthracis str. BF1
+GCF_056856795.1	Bacillus basilensis	Bacillus basilensis
+GCF_000831065.1	Bacillus bombysepticus	Bacillus bombysepticus str. Wang
+GCF_023824075.1	Bacillus bombysepticus	Bacillus bombysepticus
+GCF_030179875.1	Bacillus bombysepticus	Bacillus bombysepticus
+GCF_030219985.1	Bacillus bombysepticus	Bacillus bombysepticus
+GCF_030272035.1	Bacillus bombysepticus	Bacillus bombysepticus
+GCF_046529235.1	Bacillus bombysepticus	Bacillus bombysepticus
+GCF_000007825.1	Bacillus cereus	Bacillus cereus ATCC 14579
+GCF_000011625.1	Bacillus cereus	Bacillus cereus E33L
+GCF_000021205.1	Bacillus cereus	Bacillus cereus B4264
+GCF_000021305.1	Bacillus cereus	Bacillus cereus G9842
+GCF_000021785.1	Bacillus cereus	Bacillus cereus AH820
+GCF_000022505.1	Bacillus cereus	Bacillus cereus 03BB102
+GCF_000143605.1	Bacillus cereus	Bacillus cereus biovar anthracis str. CI
+GCF_000017425.1	Bacillus cytotoxicus	Bacillus cytotoxicus NVH 391-98
+GCF_002250885.2	Bacillus cytotoxicus	Bacillus cytotoxicus
+GCF_002250905.2	Bacillus cytotoxicus	Bacillus cytotoxicus
+GCF_002250925.2	Bacillus cytotoxicus	Bacillus cytotoxicus
+GCF_002250945.2	Bacillus cytotoxicus	Bacillus cytotoxicus
+GCF_002250965.2	Bacillus cytotoxicus	Bacillus cytotoxicus
+GCF_002251005.2	Bacillus cytotoxicus	Bacillus cytotoxicus
+GCF_009739945.1	Bacillus luti	Bacillus luti
+GCF_041225435.1	Bacillus manliponensis	Bacillus manliponensis
+GCF_057198215.1	Bacillus mobilis	Bacillus mobilis
+GCF_057198225.1	Bacillus mobilis	Bacillus mobilis
+GCF_000018825.1	Bacillus mycoides	Bacillus mycoides KBAB4
+GCF_000775975.1	Bacillus mycoides	Bacillus mycoides
+GCF_000832605.1	Bacillus mycoides	Bacillus mycoides
+GCF_002104575.1	Bacillus mycoides	Bacillus mycoides
+GCF_008274925.1	Bacillus mycoides	Bacillus mycoides
+GCF_018736705.1	Bacillus mycoides	Bacillus mycoides
+GCF_018736725.1	Bacillus mycoides	Bacillus mycoides
+GCF_018141025.1	Bacillus nitratireducens	Bacillus nitratireducens
+GCF_020861345.1	Bacillus pacificus	Bacillus pacificus
+GCF_024205385.1	Bacillus pacificus	Bacillus pacificus
+GCF_029027925.1	Bacillus pacificus	Bacillus pacificus
+GCF_035666115.1	Bacillus pacificus	Bacillus pacificus
+GCF_045348155.1	Bacillus pacificus	Bacillus pacificus
+GCF_052947615.1	Bacillus pacificus	Bacillus pacificus
+GCF_038096195.1	Bacillus paramobilis	Bacillus paramobilis
+GCF_039698855.1	Bacillus paramobilis	Bacillus paramobilis
+GCF_038971285.1	Bacillus paramycoides	Bacillus paramycoides
+GCF_005848985.1	Bacillus paranthracis	Bacillus paranthracis
+GCF_009648955.1	Bacillus paranthracis	Bacillus paranthracis
+GCF_009799965.1	Bacillus paranthracis	Bacillus paranthracis
+GCF_010669045.1	Bacillus paranthracis	Bacillus paranthracis
+GCF_015693885.1	Bacillus paranthracis	Bacillus paranthracis
+GCF_021249305.1	Bacillus paranthracis	Bacillus paranthracis
+GCF_023824115.1	Bacillus paranthracis	Bacillus paranthracis
+GCF_056776715.1	Bacillus proteolyticus	Bacillus proteolyticus
+GCF_000742855.1	Bacillus pseudomycoides	Bacillus pseudomycoides
+GCF_000832885.1	Bacillus pseudomycoides	Bacillus pseudomycoides
+GCF_050210255.1	Bacillus pseudomycoides	Bacillus pseudomycoides
+GCF_051902015.1	Bacillus pseudomycoides	Bacillus pseudomycoides
+GCF_056237715.1	Bacillus pseudomycoides	Bacillus pseudomycoides
+GCF_001831375.1	Bacillus sp.	Bacillus sp. ABP14
+GCF_002073415.2	Bacillus sp.	Bacillus sp. FDAARGOS_235
+GCF_002833485.1	Bacillus sp.	Bacillus sp. HBCD-sjtu
+GCF_008274865.1	Bacillus sp.	Bacillus sp. AR4-2
+GCF_008274885.1	Bacillus sp.	Bacillus sp. SH8-8
+GCF_008274905.1	Bacillus sp.	Bacillus sp. JAS24-2
+GCF_000008505.1	Bacillus thuringiensis	[Bacillus thuringiensis] serovar konkukian str. 97-27
+GCF_000015065.1	Bacillus thuringiensis	Bacillus thuringiensis str. Al Hakam
+GCF_000092165.1	Bacillus thuringiensis	Bacillus thuringiensis BMB171
+GCF_000193355.1	Bacillus thuringiensis	Bacillus thuringiensis serovar chinensis CT-43
+GCF_000292455.1	Bacillus thuringiensis	Bacillus thuringiensis HD-771
+GCF_000292705.1	Bacillus thuringiensis	Bacillus thuringiensis HD-789
+GCF_000300475.1	Bacillus toyonensis	Bacillus toyonensis biovar Thuringiensis MC28
+GCF_000496285.1	Bacillus toyonensis	Bacillus toyonensis BCT-7112
+GCF_016605985.1	Bacillus toyonensis	Bacillus toyonensis
+GCF_018739605.1	Bacillus toyonensis	Bacillus toyonensis
+GCF_018741125.1	Bacillus toyonensis	Bacillus toyonensis
+GCF_018741525.1	Bacillus toyonensis	Bacillus toyonensis
+GCF_013331815.1	Bacillus tropicus	Bacillus tropicus
+GCF_016026855.1	Bacillus tropicus	Bacillus tropicus
+GCF_016027575.1	Bacillus tropicus	Bacillus tropicus
+GCF_018141085.1	Bacillus tropicus	Bacillus tropicus
+GCF_023159405.1	Bacillus tropicus	Bacillus tropicus
+GCF_023824035.1	Bacillus tropicus	Bacillus tropicus
+GCF_008807735.1	Bacillus wiedmannii	Bacillus wiedmannii
+GCF_018741285.1	Bacillus wiedmannii	Bacillus wiedmannii
+GCF_018741405.1	Bacillus wiedmannii	Bacillus wiedmannii
+GCF_018741585.1	Bacillus wiedmannii	Bacillus wiedmannii
+GCF_022810705.1	Bacillus wiedmannii	Bacillus wiedmannii
+GCF_030123185.1	Bacillus wiedmannii	Bacillus wiedmannii

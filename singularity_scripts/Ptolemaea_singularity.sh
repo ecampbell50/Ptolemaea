@@ -4,8 +4,14 @@
 # image (see singularity_scripts/ptolemaea.config). No conda envs, no hmmer/blast
 # modules; the only module needed is Apptainer itself.
 #
-# Usage: bash Ptolemaea_singularity.sh <working_directory>
-# The working directory must contain: genomes/ , databases/ , scripts/ .
+# Usage: bash Ptolemaea_singularity.sh <working_directory> [genome_list]
+#   <working_directory>  must contain genomes/ (one <id>.fna per genome); results
+#                        are written to <working_directory>/output/
+#   [genome_list]        optional file of genome IDs (one per line) to process.
+#                        Default: every .fna in genomes/. Passing a subset lets
+#                        several copies run in parallel (see examples/).
+# databases/ and scripts/ are always taken from this repo, so the working
+# directory can be the repo itself or anywhere else under $PTOL_BIND.
 
 # --- Apptainer must be on PATH (Kelvin: load the module) ---------------------
 # Comment this out / adjust on systems where apptainer is already available.
@@ -13,25 +19,25 @@ module load apps/apptainer/1.3.4 2>/dev/null || true
 
 # --- Argument check ----------------------------------------------------------
 if [[ -z "$1" ]]; then
-    echo "Usage: $0 <working_directory>"
+    echo "Usage: $0 <working_directory> [genome_list]"
     exit 1
 fi
+
+# --- Load the containerised functions (this also sources ptolemaea.config) ---
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${SCRIPT_DIR}/pipeline_functions_v2.sh"
 
 # --- Directories -------------------------------------------------------------
 WORKING_DIR=$1
 GENOME_DIR="${WORKING_DIR}/genomes"
 OUTPUT_BASE="${WORKING_DIR}/output"
-MASTER_KEY="${WORKING_DIR}/databases/MASTER_ToolKey.tsv"
-BCEREUS_DB="${WORKING_DIR}/databases/bcereus_db/Bcereus_ConsensusDefProts_17Sep25"
-BCEREUS_FAA="${WORKING_DIR}/databases/bcereus_db/Bcereus_DefenceProts_17Sep25.faa"
-CONSENSUS_SCRIPT="${WORKING_DIR}/scripts/create_defence_profile_direct.py"
-GENOME_LIST="${OUTPUT_BASE}/genome_list.txt"
+MASTER_KEY="${PTOL_REPO_DIR}/databases/MASTER_ToolKey.tsv"
+BCEREUS_DB="${PTOL_REPO_DIR}/databases/bcereus_db/Bcereus_ConsensusDefProts_17Sep25"
+BCEREUS_FAA="${PTOL_REPO_DIR}/databases/bcereus_db/Bcereus_DefenceProts_17Sep25.faa"
+CONSENSUS_SCRIPT="${PTOL_REPO_DIR}/scripts/create_defence_profile_direct.py"
+GENOME_LIST="${2:-${OUTPUT_BASE}/genome_list.txt}"
 
-CPUS=8   # threads handed to each tool
-
-# --- Load the containerised functions (this also sources ptolemaea.config) ---
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "${SCRIPT_DIR}/pipeline_functions_v2.sh"
+CPUS=${PTOL_CPUS}   # threads handed to each tool (set in ptolemaea.config)
 
 # --- Build output dir + genome list if missing -------------------------------
 mkdir -p "${OUTPUT_BASE}"

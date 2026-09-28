@@ -9,3 +9,11 @@ __pycache__/
 genomes/
 output/
 logs/
+
+# Containerised setup (created by singularity_scripts/setup.sh)
+images/
+databases_runtime/
+.apptainer_cache/
+
+# Worked example outputs
+examples/*/run/

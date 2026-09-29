@@ -6,7 +6,8 @@ __pycache__/
 *.pyc
 
 # Pipeline outputs / inputs (not version-controlled)
-genomes/
+genomes/*
+!genomes/.gitkeep
 output/
 logs/
 

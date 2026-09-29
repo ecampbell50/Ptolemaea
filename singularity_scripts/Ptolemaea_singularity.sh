@@ -28,7 +28,11 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/pipeline_functions_v2.sh"
 
 # --- Directories -------------------------------------------------------------
-WORKING_DIR=$1
+WORKING_DIR="$(cd "$1" && pwd -P)"
+# Make the working dir visible inside every container if $PTOL_BIND doesn't cover it
+if [[ "${WORKING_DIR}/" != "${PTOL_BIND%/}/"* ]]; then
+    PTOL_APPTAINER="${PTOL_APPTAINER} --bind ${WORKING_DIR}"
+fi
 GENOME_DIR="${WORKING_DIR}/genomes"
 OUTPUT_BASE="${WORKING_DIR}/output"
 MASTER_KEY="${PTOL_REPO_DIR}/databases/MASTER_ToolKey.tsv"

@@ -51,7 +51,8 @@ login node.
 **1. Run.** Put one nucleotide FASTA per genome (`<id>.fna`) in `genomes/`, then:
 
 ```bash
-bash singularity_scripts/Ptolemaea_singularity.sh .
+bash singularity_scripts/Ptolemaea_singularity.sh .    # one genome after another
+bash singularity_scripts/submit_slurm.sh .             # or: one SLURM job per genome
 ```
 
 Each genome goes through Pyrodigal (gene calling), PADLOC, DefenseFinder and bidirectional
@@ -88,13 +89,23 @@ python3 scripts/create_final_defence_matrix.py --consensus-dir output/05_consens
 This writes `mydata_matrix.csv` (genome × system gene counts, columns
 `<type>#<subtype>#<outcome>`; add `--binary` for presence/absence),
 `mydata_annotations.csv` (one row per defence gene) and `mydata_summary.tsv` (per-genome
-counts). The Python steps need pandas; on a cluster without it, prefix them with
-`apptainer exec images/pandas.sif`.
+counts).
+
+**4. Plot.** A genome × defence-system presence/absence heatmap, from the matrix (so your
+curated names are used) or straight from `--consensus-dir output/05_consensus/`:
+
+```bash
+python3 scripts/plot_defence_heatmap.py --matrix mydata_matrix.csv --output mydata_heatmap
+```
+
+The Python steps need pandas (and matplotlib for step 4). To use the containers instead,
+prefix them with `apptainer exec --bind "$PWD" images/pandas.sif` (steps 2–3) or
+`images/seaborn.sif` (step 4).
 
 Paths, threads (`PTOL_CPUS`) and tool versions are set in
-`singularity_scripts/ptolemaea.config`. If your genomes are outside the repo on an HPC, bind
-that filesystem, e.g. `export PTOL_BIND=/mnt/scratch2`. The original non-container scripts
-(Prokka, conda, SLURM) are kept in `scripts/`.
+`singularity_scripts/ptolemaea.config`; SLURM options for `submit_slurm.sh` via
+`PTOL_SBATCH_ARGS` (see below). The original non-container scripts (Prokka, conda, SLURM)
+are kept in `scripts/`.
 
 ## Example run
 
